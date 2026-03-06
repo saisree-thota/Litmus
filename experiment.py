@@ -1,6 +1,7 @@
 """
 Experiment assignment system for A/B testing.
 """
+import hashlib
 from typing import Dict, Any
 
 
@@ -14,7 +15,10 @@ class ExperimentAssigner:
         Args:
             config: Experiment configuration
         """
-        pass
+        self.config = config
+        self.variants = list(config.get("experiments", {}).get("email_variants", {}).keys())
+        if not self.variants:
+            self.variants = ["variant_a", "variant_b"]
 
     def assign_variant(self, lead_id: str) -> str:
         """
@@ -26,4 +30,9 @@ class ExperimentAssigner:
         Returns:
             Experiment variant identifier (e.g. "variant_a" or "variant_b")
         """
-        pass
+        if not self.variants:
+            return "variant_a"
+        
+        hash_value = int(hashlib.md5(lead_id.encode()).hexdigest(), 16)
+        variant_index = hash_value % len(self.variants)
+        return self.variants[variant_index]
